@@ -4,7 +4,7 @@ name: Echo on Push to Main
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch: # optional — allows manual run from Actions UI
 
 jobs:
