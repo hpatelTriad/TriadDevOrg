@@ -1,0 +1,38 @@
+name: Salesforce CI/CD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repo
+      - uses: actions/checkout@v3
+
+      # Setup Node.js + enable npm caching
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: npm install --global sfdx-cli
+
+      # Authenticate with Salesforce using JWT
+      - name: Salesforce Auth with JWT
+        run: |
+          echo "${{ secrets.SF_JWT_KEY }}" > server.key
+          sfdx auth:jwt:grant \
+            --clientid ${{ secrets.SF_CONSUMER_KEY }} \
+            --jwtkeyfile server.key \
+            --username ${{ secrets.SF_SANDBOX_USERNAME }} \
+            --instanceurl https://${{ vars.PROD_ENV }}
+
+      # Deploy source code
+      - name: Deploy to Salesforce Sandbox
+        run: sfdx force:source:deploy -p force-app
